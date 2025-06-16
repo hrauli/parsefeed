@@ -24,8 +24,8 @@ jobs:
 
       - name: Commit and push feed.xml
         run: |
-          git config --global user.email "hrauli@users.noreply.github.com"
-          git config --global user.name "YourBot"
-          git add feed.xml
-          git commit -m "Update RSS feed"
-          git push
+              git config --global user.email "hrauli@users.noreply.github.com"
+              git config --global user.name "RSS Bot"
+              git add feed.xml || echo "Nothing to add"
+              git commit -m "Update RSS feed" || echo "Nothing to commit"
+              git push
