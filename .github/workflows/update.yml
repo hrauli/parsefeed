@@ -1,0 +1,31 @@
+name: Update YouTube RSS Feed
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install feedparser feedgen
+
+      - name: Generate RSS Feed
+        run: python generate_feed.py
+
+      - name: Commit and push feed.xml
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "YourBot"
+          git add feed.xml
+          git commit -m "Update RSS feed"
+          git push
