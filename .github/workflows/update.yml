@@ -22,7 +22,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: pip install feedparser feedgen
+        run: pip install feedparser feedgen requests
 
       - name: Generate feed
         run: python generate_feed.py
