@@ -3,10 +3,12 @@ from feedgen.feed import FeedGenerator
 import re
 import json
 from datetime import datetime
+import requests
 
-def load_channels(filepath='channels.json'):
-    with open(filepath, 'r') as f:
-        return json.load(f)
+def load_channels(url='https://raw.githubusercontent.com/hrauli/parsefeed/refs/heads/main/channels.json'):
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
 
 def extract_video_id(entry):
     if hasattr(entry, 'yt_videoid'):
