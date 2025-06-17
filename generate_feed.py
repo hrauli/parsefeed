@@ -57,7 +57,7 @@ def main():
         fe.description(iframe)
 
     fg.rss_file("feed.xml")
-    print("✅ combined_feed.xml generated with multiple channels.")
+    print("✅ feed.xml generated with multiple channels.")
 
 if __name__ == "__main__":
     main()
