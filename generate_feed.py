@@ -1,8 +1,6 @@
 import feedparser
 from feedgen.feed import FeedGenerator
 import re
-from datetime import datetime
-from html import escape
 
 # Change this to any YouTube channel ID
 CHANNEL_ID = 'UCsBjURrPoezykLs9EqgamOA'
@@ -10,7 +8,7 @@ YOUTUBE_FEED = f"https://www.youtube.com/feeds/videos.xml?channel_id={CHANNEL_ID
 CHANNEL_LINK = f"https://www.youtube.com/channel/{CHANNEL_ID}"
 
 def extract_video_id(entry):
-    """Extract video ID from yt_videoid or entry.id"""
+    """Extract video ID from yt_videoid or entry.id or entry.link"""
     if hasattr(entry, 'yt_videoid'):
         return entry.yt_videoid
     elif 'id' in entry:
@@ -36,14 +34,13 @@ def main():
             continue
 
         iframe = f'<iframe width="560" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
-        description = f"<![CDATA[{iframe}]]>"
 
         fe = fg.add_entry()
         fe.id(entry.id)
         fe.title(entry.title)
         fe.link(href=entry.link)
         fe.pubDate(entry.published)
-        fe.description(description)
+        fe.description(iframe)  # pass raw iframe HTML only
 
     fg.rss_file("feed.xml")
     print("✅ feed.xml generated successfully.")
