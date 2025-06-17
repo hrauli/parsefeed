@@ -1,14 +1,14 @@
 import feedparser
 from feedgen.feed import FeedGenerator
 import re
+import json
+from datetime import datetime
 
-# Change this to any YouTube channel ID
-CHANNEL_ID = 'UCsBjURrPoezykLs9EqgamOA'
-YOUTUBE_FEED = f"https://www.youtube.com/feeds/videos.xml?channel_id={CHANNEL_ID}"
-CHANNEL_LINK = f"https://www.youtube.com/channel/{CHANNEL_ID}"
+def load_channels(filepath='channels.json'):
+    with open(filepath, 'r') as f:
+        return json.load(f)
 
 def extract_video_id(entry):
-    """Extract video ID from yt_videoid or entry.id or entry.link"""
     if hasattr(entry, 'yt_videoid'):
         return entry.yt_videoid
     elif 'id' in entry:
@@ -20,30 +20,44 @@ def extract_video_id(entry):
     return None
 
 def main():
-    parsed = feedparser.parse(YOUTUBE_FEED)
+    channels = load_channels()
 
     fg = FeedGenerator()
-    fg.title(parsed.feed.get('title', 'YouTube Channel'))
-    fg.link(href=CHANNEL_LINK)
-    fg.description("Custom RSS feed with embedded YouTube videos")
+    fg.title("Combined YouTube Channels Feed")
+    fg.link(href="https://www.youtube.com")
+    fg.description("Custom RSS feed with embedded YouTube videos from multiple channels")
     fg.language('en')
 
-    for entry in parsed.entries:
+    all_entries = []
+
+    for channel in channels:
+        channel_id = channel['id']
+        channel_name = channel.get('name', channel_id)
+        feed_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
+        parsed = feedparser.parse(feed_url)
+
+        for entry in parsed.entries:
+            entry.channel_name = channel_name
+            all_entries.append(entry)
+
+    # Sort all videos by published date descending
+    all_entries.sort(key=lambda e: datetime(*e.published_parsed[:6]), reverse=True)
+
+    for entry in all_entries:
         video_id = extract_video_id(entry)
         if not video_id:
             continue
-
         iframe = f'<iframe width="560" height="315" src="https://www.youtube.com/embed/{video_id}" frameborder="0" allowfullscreen></iframe>'
 
         fe = fg.add_entry()
         fe.id(entry.id)
-        fe.title(entry.title)
+        fe.title(f"[{entry.channel_name}] {entry.title}")
         fe.link(href=entry.link)
         fe.pubDate(entry.published)
-        fe.description(iframe)  # pass raw iframe HTML only
+        fe.description(iframe)
 
-    fg.rss_file("feed.xml")
-    print("✅ feed.xml generated successfully.")
+    fg.rss_file("combined_feed.xml")
+    print("✅ combined_feed.xml generated with multiple channels.")
 
 if __name__ == "__main__":
     main()
